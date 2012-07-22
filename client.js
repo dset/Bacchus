@@ -1,47 +1,63 @@
-require([], function () {
+require(['player', 'engine', 'gametypes', 'wall'], function (Player, engine, gametypes, Wall) {
 	var socket = io.connect("http://localhost:8080");
 	var canvas = document.getElementById("canvas");
 	var context2d = canvas.getContext("2d");
 	var board;
-	socket.on("board", function (boardData) {
-		board = boardData;
+	var tickTime;
+	socket.on("gameinfo", function (gameInfo) {
+		board = gameInfo.board;
+		for(var i = 0; i < board.length; i++) {
+			for(var j = 0; j < board[0].length; j++) {
+				if(board[i][j] === gametypes.WALL)
+					board[i][j] = new Wall();
+			}
+		}
+		engine.start(gameInfo.tickTime, draw);
 	});
 
-	socket.on("moveleft", function (data) {
-		setTimeout(function () {
-			board[data.i][data.j][4]--;
-			board[data.i-1][data.j][4]++;
-		}, data.time);
+	socket.on("newplayer", function (playerData) {
+		engine.addPlayer(playerData.id, new Player(playerData.x, playerData.y));
+	});
+
+	socket.on("moveplayer", function (moveData) {
+		var players = engine.getPlayers();
+		players[moveData.id].moveToPosition(moveData.targetPosition, moveData.speed,
+											moveData.ticks);
 	});
 
 	function draw() {
-		window.webkitRequestAnimationFrame(draw);
-
 		context2d.clearRect(0, 0, canvas.width, canvas.height);
-		tilesize = canvas.width / board.length;
+		tileSize = canvas.width / board.length;
 		for(var i = 0; i < board.length; i++) {
 			for(var j = 0; j < board[i].length; j++) {
-				for(var k = 0; k < board[i][j].length; k++) {
-					switch(k) {
-					case 0:
-						context2d.fillStyle = "black";
-						if(board[i][j][k] === 0) {
-							context2d.strokeRect(i * tilesize, j * tilesize, tilesize, tilesize);
-						} else if(board[i][j][k] === 1) {
-							context2d.fillRect(i * tilesize, j * tilesize, tilesize, tilesize);
-						}
-						break;
-					case 4:
-						context2d.fillStyle = "blue";
-						if(board[i][j][k] !== 0) {
-							context2d.fillRect(i * tilesize, j * tilesize, tilesize, tilesize);
-						}
-						break;
-					}
-				}
+				if(board[i][j])
+					board[i][j].render(context2d, {x: i, y: j}, tileSize)
 			}
 		}
+
+		var players = engine.getPlayers();
+		var keys = Object.keys(players);
+		keys.forEach(function (key) {
+			var pos = players[key].getPosition();
+			context2d.fillStyle = "green";
+			context2d.fillRect(pos.x * tileSize, pos.y * tileSize, tileSize, tileSize);
+		});
 	}
 
-	window.webkitRequestAnimationFrame(draw);
+	document.addEventListener("keydown", function (e) {
+		switch(e.keyCode) {
+		case 65:
+			socket.emit("moveleft");
+			break;
+		case 68:
+			socket.emit("moveright");
+			break;
+		case 83:
+			socket.emit("movedown");
+			break;
+		case 87:
+			socket.emit("moveup");
+			break;
+		}
+	});
 });
