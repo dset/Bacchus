@@ -32,6 +32,10 @@ define([], function () {
 	Player.prototype.getSpeed = function () {
 		return this.speed;
 	};
+
+	Player.prototype.isMoving = function () {
+		return this.speed.x !== 0 || this.speed.y !== 0;
+	};
 	
 	return Player;
 });

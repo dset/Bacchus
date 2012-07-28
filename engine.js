@@ -20,10 +20,14 @@ define([], function () {
 		players[id] = player;
 	}
 
+	function getPlayer(id) {
+		return players[id];
+	}
+
 	function getPlayers() {
 		return players;
 	}
 
 
-	return {start: start, addPlayer: addPlayer, getPlayers: getPlayers};
+	return {start: start, addPlayer: addPlayer, getPlayers: getPlayers, getPlayer: getPlayer};
 });

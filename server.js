@@ -16,8 +16,8 @@ function (express, socketio, Player, engine, Wall, gametypes, Board) {
 	var io = socketio.listen(server);
 
 	io.sockets.on("connection", function (socket) {
-		var player = new Player(5, 5);
-		engine.addPlayer(socket.id, player);
+		var newplayer = new Player(5, 5);
+		engine.addPlayer(socket.id, newplayer);
 
 		var serializedBoard = board.getSerializedVersion();
 		socket.emit("gameinfo", {tickTime: TICK_TIME, board: serializedBoard});
@@ -29,21 +29,27 @@ function (express, socketio, Player, engine, Wall, gametypes, Board) {
 		});
 
 		socket.on("moveleft", function () {
-			// kolla pos nu, kolla kollisioner, beräkna, svara
-			var pos = engine.getPlayers()[socket.id].getPosition();
-			var speed = engine.getPlayers()[socket.id].getSpeed();
-			if(speed.x !== 0 || speed.y !== 0) {
+			var player = engine.getPlayer(socket.id);
+
+			if(player.isMoving()) {
 				return;
 			}
+			
+			var pos = player.getPosition();
 			if(pos.x-1 >= 0 && board.isTileWalkable(pos.x - 1, pos.y)) {
-				var targetPosition = {x: pos.x-1, y: pos.y};
-				var ticks = 1000 / TICK_TIME;
-				var speed = {x: -1 / ticks, y: 0};
-				socket.emit("moveplayer", {id: socket.id, targetPosition: targetPosition,
-										   speed: speed, ticks: ticks});
-				engine.getPlayers()[socket.id].moveToPosition(targetPosition, speed, ticks);
+				doMovePlayer(-1, 0);
 			}
 		});
+
+		function doMovePlayer(dx, dy) {
+			var pos = engine.getPlayer(socket.id).getPosition();
+			var targetPosition = {x: pos.x+dx, y: pos.y+dy};
+			var ticks = 1000 / TICK_TIME;
+			var speed = {x: dx / ticks, y: dy / ticks};
+			socket.emit("moveplayer", {id: socket.id, targetPosition: targetPosition,
+									   speed: speed, ticks: ticks});
+			engine.getPlayer(socket.id).moveToPosition(targetPosition, speed, ticks);
+		}
 	});
 
 	server.listen(8080);
