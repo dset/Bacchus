@@ -5,13 +5,9 @@ require(['player', 'engine', 'gametypes', 'wall'], function (Player, engine, gam
 	var board;
 	var tickTime;
 	socket.on("gameinfo", function (gameInfo) {
-		board = gameInfo.board;
-		for(var i = 0; i < board.length; i++) {
-			for(var j = 0; j < board[0].length; j++) {
-				if(board[i][j] === gametypes.WALL)
-					board[i][j] = new Wall();
-			}
-		}
+		board = new Board(0, 0);
+		board.buildFromSerializedVersion(gameInfo.board);
+
 		engine.start(gameInfo.tickTime, draw);
 	});
 
