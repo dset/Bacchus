@@ -36,15 +36,54 @@ function (express, socketio, Player, engine, Wall, gametypes, Board) {
 			}
 			
 			var pos = player.getPosition();
-			if(pos.x-1 >= 0 && board.isTileWalkable(pos.x - 1, pos.y)) {
+			if(board.isTileWalkable(pos.x - 1, pos.y)) {
 				doMovePlayer(-1, 0);
+			}
+		});
+
+		socket.on("moveright", function () {
+			var player = engine.getPlayer(socket.id);
+
+			if(player.isMoving()) {
+				return;
+			}
+			
+			var pos = player.getPosition();
+			if(board.isTileWalkable(pos.x + 1, pos.y)) {
+				doMovePlayer(1, 0);
+			}
+		});
+
+		socket.on("moveup", function () {
+			var player = engine.getPlayer(socket.id);
+
+			if(player.isMoving()) {
+				return;
+			}
+			
+			var pos = player.getPosition();
+			if(board.isTileWalkable(pos.x, pos.y - 1)) {
+				doMovePlayer(0, -1);
+			}
+		});
+
+		socket.on("movedown", function () {
+			var player = engine.getPlayer(socket.id);
+
+			if(player.isMoving()) {
+				return;
+			}
+			
+			var pos = player.getPosition();
+			if(board.isTileWalkable(pos.x, pos.y + 1)) {
+				doMovePlayer(0, 1);
 			}
 		});
 
 		function doMovePlayer(dx, dy) {
 			var pos = engine.getPlayer(socket.id).getPosition();
 			var targetPosition = {x: pos.x+dx, y: pos.y+dy};
-			var ticks = 1000 / TICK_TIME;
+			var ticks = 400 / TICK_TIME;
 			var speed = {x: dx / ticks, y: dy / ticks};
 			socket.emit("moveplayer", {id: socket.id, targetPosition: targetPosition,
 									   speed: speed, ticks: ticks});

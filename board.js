@@ -44,6 +44,9 @@ define(['wall', 'gametypes'], function (Wall, gametypes) {
 	};
 
 	Board.prototype.isTileWalkable = function (x, y) {
+		if(x < 0 || x >= this.board.length || y < 0 || y >= this.board[x].length) {
+			return false;
+		}
 		return !(this.board[x][y] instanceof Wall);
 	};
 
