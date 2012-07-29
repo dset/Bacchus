@@ -1,13 +1,12 @@
-require(['player', 'engine', 'gametypes', 'wall'], function (Player, engine, gametypes, Wall) {
+require(['player', 'engine', 'gametypes', 'wall', 'board'], function (Player, engine, gametypes, Wall, Board) {
 	var socket = io.connect("http://localhost:8080");
 	var canvas = document.getElementById("canvas");
 	var context2d = canvas.getContext("2d");
 	var board;
 	var tickTime;
 	socket.on("gameinfo", function (gameInfo) {
-		board = new Board(0, 0);
+		board = new Board(1, 1);
 		board.buildFromSerializedVersion(gameInfo.board);
-
 		engine.start(gameInfo.tickTime, draw);
 	});
 
@@ -23,13 +22,8 @@ require(['player', 'engine', 'gametypes', 'wall'], function (Player, engine, gam
 
 	function draw() {
 		context2d.clearRect(0, 0, canvas.width, canvas.height);
-		tileSize = canvas.width / board.length;
-		for(var i = 0; i < board.length; i++) {
-			for(var j = 0; j < board[i].length; j++) {
-				if(board[i][j])
-					board[i][j].render(context2d, {x: i, y: j}, tileSize)
-			}
-		}
+
+		board.render(context2d);
 
 		var players = engine.getPlayers();
 		var keys = Object.keys(players);
