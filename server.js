@@ -76,7 +76,10 @@ function (express, socketio, Player, engine, Wall, gametypes, Board, Bomb) {
 		});
 
 		function explodeBomb(bomb) {
-			bomb.explode();
+			var touchedBombs = bomb.explode() || new Array();
+			touchedBombs.forEach(function (bomb) {
+				explodeBomb(bomb);
+			});
 			socket.emit("bombexplosion", bomb.getPosition());
 		}
 	});

@@ -51,7 +51,9 @@ define(['wall', 'gametypes'], function (Wall, gametypes) {
 	};
 
 	Board.prototype.setTile = function (x, y, tileObject) {
-		this.board[x][y] = tileObject;
+		if(this.isTileWalkable(x, y)) {
+			this.board[x][y] = tileObject;
+		}
 	};
 
 	Board.prototype.getTileObjectAt = function (x, y) {
