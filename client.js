@@ -1,4 +1,4 @@
-require(['player', 'engine', 'gametypes', 'wall', 'board'], function (Player, engine, gametypes, Wall, Board) {
+require(['player', 'engine', 'gametypes', 'wall', 'board', 'bomb'], function (Player, engine, gametypes, Wall, Board, Bomb) {
 	var socket = io.connect("http://localhost:8080");
 	var canvas = document.getElementById("canvas");
 	var context2d = canvas.getContext("2d");
@@ -18,6 +18,16 @@ require(['player', 'engine', 'gametypes', 'wall', 'board'], function (Player, en
 		var players = engine.getPlayers();
 		players[moveData.id].moveToPosition(moveData.targetPosition, moveData.speed,
 											moveData.ticks);
+	});
+
+	socket.on("placebomb", function (data) {
+		var bomb = new Bomb(board, data.x, data.y);
+		board.setTile(data.x, data.y, bomb);
+	});
+
+	socket.on("bombexplosion", function (data) {
+		var bomb = board.getTileObjectAt(data.x, data.y);
+		bomb.explode();
 	});
 
 	function draw() {
@@ -47,6 +57,9 @@ require(['player', 'engine', 'gametypes', 'wall', 'board'], function (Player, en
 			break;
 		case 87:
 			socket.emit("moveup");
+			break;
+		case 32:
+			socket.emit("placebomb");
 			break;
 		}
 	});

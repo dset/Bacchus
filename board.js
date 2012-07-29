@@ -50,6 +50,14 @@ define(['wall', 'gametypes'], function (Wall, gametypes) {
 		return !(this.board[x][y] instanceof Wall);
 	};
 
+	Board.prototype.setTile = function (x, y, tileObject) {
+		this.board[x][y] = tileObject;
+	};
+
+	Board.prototype.getTileObjectAt = function (x, y) {
+		return this.board[x][y];
+	};
+
 	Board.prototype.render = function (context2d) {
 		tileSize = context2d.canvas.width / this.board.length;
 		for(var i = 0; i < this.board.length; i++) {

@@ -4,8 +4,8 @@ requirejs.config({
 	nodeRequire: require
 });
 
-requirejs(['express', 'socket.io', 'player', 'engine', 'wall', 'gametypes', 'board'], 
-function (express, socketio, Player, engine, Wall, gametypes, Board) {
+requirejs(['express', 'socket.io', 'player', 'engine', 'wall', 'gametypes', 'board', 'bomb'], 
+function (express, socketio, Player, engine, Wall, gametypes, Board, Bomb) {
 	var TICK_TIME = 30;
 	var BOARD_SIZE = 10;
 	var board = new Board(BOARD_SIZE, BOARD_SIZE);
@@ -58,6 +58,26 @@ function (express, socketio, Player, engine, Wall, gametypes, Board) {
 			socket.emit("moveplayer", {id: socket.id, targetPosition: targetPosition,
 									   speed: speed, ticks: ticks});
 			engine.getPlayer(socket.id).moveToPosition(targetPosition, speed, ticks);
+		}
+
+		socket.on("placebomb", function () {
+			var player = engine.getPlayer(socket.id);
+			var pos = player.getPosition();
+			pos.x = Math.round(pos.x);
+			pos.y = Math.round(pos.y);
+			var bomb = new Bomb(board, pos.x, pos.y);
+			board.setTile(pos.x, pos.y, bomb);
+
+			setTimeout(function () {
+				explodeBomb(bomb);
+			}, 3000);
+
+			socket.emit("placebomb", bomb.getPosition());
+		});
+
+		function explodeBomb(bomb) {
+			bomb.explode();
+			socket.emit("bombexplosion", bomb.getPosition());
 		}
 	});
 
