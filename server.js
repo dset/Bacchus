@@ -57,7 +57,7 @@ function (express, socketio, Player, engine, Wall, gametypes, Board, Bomb) {
 	    var targetPosition = {x: pos.x+dx, y: pos.y+dy};
 	    var ticks = 400 / TICK_TIME;
 	    var speed = {x: dx / ticks, y: dy / ticks};
-	    socket.emit("moveplayer", {id: socket.id, targetPosition: targetPosition,
+	    io.sockets.emit("moveplayer", {id: socket.id, targetPosition: targetPosition,
 				       speed: speed, ticks: ticks});
 	    engine.getPlayer(socket.id).moveToPosition(targetPosition, speed, ticks);
 	}
