@@ -74,7 +74,7 @@ function (express, socketio, Player, engine, Wall, gametypes, Board, Bomb) {
 		explodeBomb(bomb);
 	    }, 3000);
 
-	    socket.emit("placebomb", bomb.getPosition());
+	    io.sockets.emit("placebomb", bomb.getPosition());
 	});
 
 	function explodeBomb(bomb) {
@@ -82,7 +82,7 @@ function (express, socketio, Player, engine, Wall, gametypes, Board, Bomb) {
 	    touchedBombs.forEach(function (bomb) {
 		explodeBomb(bomb);
 	    });
-	    socket.emit("bombexplosion", bomb.getPosition());
+	    io.sockets.emit("bombexplosion", bomb.getPosition());
 	}
     });
 
