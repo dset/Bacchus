@@ -1,4 +1,4 @@
-define(['wall', 'gametypes'], function (Wall, gametypes) {
+define(['wall', 'gametypes', 'bomb'], function (Wall, gametypes, Bomb) {
     function Board(width, height) {
 	this.board = new Array(width);
 	
@@ -47,11 +47,11 @@ define(['wall', 'gametypes'], function (Wall, gametypes) {
 	if(x < 0 || x >= this.board.length || y < 0 || y >= this.board[x].length) {
 	    return false;
 	}
-	return !(this.board[x][y] instanceof Wall);
+	return !(this.board[x][y] instanceof Wall || this.board[x][y] instanceof Bomb);
     };
 
     Board.prototype.setTile = function (x, y, tileObject) {
-	if(this.isTileWalkable(x, y)) {
+	if(!(this.board[x][y] instanceof Wall)) {
 	    this.board[x][y] = tileObject;
 	}
     };
