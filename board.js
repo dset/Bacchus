@@ -1,4 +1,4 @@
-define(['wall', 'gametypes', 'bomb'], function (Wall, gametypes, Bomb) {
+define(['wall', 'gametypes', 'bomb', 'explosionfragment'], function (Wall, gametypes, Bomb, ExplosionFragment) {
     function Board(width, height) {
 	this.board = new Array(width);
 	
@@ -51,8 +51,21 @@ define(['wall', 'gametypes', 'bomb'], function (Wall, gametypes, Bomb) {
     };
 
     Board.prototype.setTile = function (x, y, tileObject) {
+	this.board[x][y] = tileObject;
+    };
+
+    Board.prototype.setBombAt = function (x, y) {
+	if(!(this.board[x][y] instanceof Wall || this.board[x][y] instanceof Bomb)) {
+	    var bomb = new Bomb(this, x, y);
+	    this.setTile(x, y, bomb);
+	    return bomb;
+	}
+    };
+
+    Board.prototype.setExplosionFragmentAt = function (x, y) {
 	if(!(this.board[x][y] instanceof Wall)) {
-	    this.board[x][y] = tileObject;
+	    var explfrag = new ExplosionFragment(this, x, y);
+	    this.setTile(x, y, explfrag);
 	}
     };
 

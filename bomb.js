@@ -29,7 +29,7 @@ define(['explosionfragment'], function (ExplosionFragment) {
 	if(board.getTileObjectAt(x, y) instanceof Bomb) {
 	    return board.getTileObjectAt(x, y);
 	} else {
-	    board.setTile(x, y, new ExplosionFragment(board, x, y));
+	    board.setExplosionFragmentAt(x, y);
 	}
     }
 

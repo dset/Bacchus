@@ -87,14 +87,14 @@ function (express, socketio, Player, engine, Wall, gametypes, Board, Bomb) {
 	    var pos = player.getPosition();
 	    pos.x = Math.round(pos.x);
 	    pos.y = Math.round(pos.y);
-	    var bomb = new Bomb(board, pos.x, pos.y);
-	    board.setTile(pos.x, pos.y, bomb);
+	    var bomb = board.setBombAt(pos.x, pos.y);
+	    if(bomb) {
+		bomb.timeoutId = setTimeout(function () {
+		    explodeBomb(bomb);
+		}, 3000);
 
-	    bomb.timeoutId = setTimeout(function () {
-		explodeBomb(bomb);
-	    }, 3000);
-
-	    io.sockets.emit("placebomb", bomb.getPosition());
+		io.sockets.emit("placebomb", bomb.getPosition());
+	    }
 	});
 
 	function explodeBomb(bomb) {
