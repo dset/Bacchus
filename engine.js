@@ -20,6 +20,10 @@ define([], function () {
 	players[id] = player;
     }
 
+    function removePlayer(id) {
+	delete players[id];
+    }
+
     function getPlayer(id) {
 	return players[id];
     }
@@ -29,5 +33,10 @@ define([], function () {
     }
 
 
-    return {start: start, addPlayer: addPlayer, getPlayers: getPlayers, getPlayer: getPlayer};
+    return {start: start,
+	    addPlayer: addPlayer,
+	    getPlayers: getPlayers,
+	    getPlayer: getPlayer,
+	    removePlayer: removePlayer
+	   };
 });

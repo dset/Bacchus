@@ -11,7 +11,11 @@ require(['player', 'engine', 'gametypes', 'wall', 'board', 'bomb'], function (Pl
     });
 
     socket.on("newplayer", function (playerData) {
-	engine.addPlayer(playerData.id, new Player(playerData.x, playerData.y));
+	engine.addPlayer(playerData.id, new Player(playerData.x, playerData.y, board));
+    });
+
+    socket.on("removeplayer", function (data) {
+	engine.removePlayer(data.id);
     });
 
     socket.on("moveplayer", function (moveData) {

@@ -26,9 +26,22 @@ function (express, socketio, Player, engine, Wall, gametypes, Board, Bomb) {
 	    socket.emit("newplayer", {id: key, x: pos.x, y: pos.y});
 	});
 
-	var newplayer = new Player(5, 5);
-	engine.addPlayer(socket.id, newplayer);
-	io.sockets.emit("newplayer", {id: socket.id, x: 5, y: 5});
+	createPlayer(5, 5);
+
+	function killPlayer() {
+	    engine.removePlayer(socket.id);
+	    io.sockets.emit("removeplayer", {id: socket.id});
+	    setTimeout(function () {
+		createPlayer(5, 5);
+	    }, 2000);
+	}
+
+	function createPlayer(x, y) {
+	    var newplayer = new Player(x, y, board);
+	    newplayer.addObserver("dead", killPlayer);
+	    engine.addPlayer(socket.id, newplayer);
+	    io.sockets.emit("newplayer", {id: socket.id, x: x, y: y});
+	}
 
 	socket.on("moveleft", function () {
 	    doMovePlayer(-1, 0);
@@ -48,7 +61,10 @@ function (express, socketio, Player, engine, Wall, gametypes, Board, Bomb) {
 
 	function doMovePlayer(dx, dy) {
 	    var player = engine.getPlayer(socket.id);
-
+	    if(!player) {
+		return;
+	    }
+	    
 	    var pos = player.getPosition();
 	    if(player.isMoving() || !board.isTileWalkable(pos.x + dx, pos.y + dy)) {
 		return;
@@ -64,6 +80,10 @@ function (express, socketio, Player, engine, Wall, gametypes, Board, Bomb) {
 
 	socket.on("placebomb", function () {
 	    var player = engine.getPlayer(socket.id);
+	    if(!player) {
+		return;
+	    }
+	    
 	    var pos = player.getPosition();
 	    pos.x = Math.round(pos.x);
 	    pos.y = Math.round(pos.y);
