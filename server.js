@@ -107,6 +107,11 @@ function (express, socketio, Player, engine, Wall, gametypes, Board, Bomb) {
 	    });
 	    io.sockets.emit("bombexplosion", bomb.getPosition());
 	}
+
+	socket.on("disconnect", function () {
+	    engine.removePlayer(socket.id);
+	    io.sockets.emit("removeplayer", {id: socket.id});
+	});
     });
 
     server.listen(8080);
