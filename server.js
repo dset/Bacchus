@@ -70,7 +70,7 @@ function (express, socketio, Player, engine, Wall, gametypes, Board, Bomb) {
 	    var bomb = new Bomb(board, pos.x, pos.y);
 	    board.setTile(pos.x, pos.y, bomb);
 
-	    setTimeout(function () {
+	    bomb.timeoutId = setTimeout(function () {
 		explodeBomb(bomb);
 	    }, 3000);
 
@@ -80,7 +80,10 @@ function (express, socketio, Player, engine, Wall, gametypes, Board, Bomb) {
 	function explodeBomb(bomb) {
 	    var touchedBombs = bomb.explode() || new Array();
 	    touchedBombs.forEach(function (bomb) {
-		explodeBomb(bomb);
+		clearTimeout(bomb.timeoutId);
+		if(!bomb.isExploded()) {
+		    explodeBomb(bomb);
+		}
 	    });
 	    io.sockets.emit("bombexplosion", bomb.getPosition());
 	}

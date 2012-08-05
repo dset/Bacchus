@@ -12,10 +12,6 @@ define(['explosionfragment'], function (ExplosionFragment) {
     };
 
     Bomb.prototype.explode = function () {
-	if(this.hasExploded) {
-	    return;
-	}
-
 	this.hasExploded = true;
 	this.board.setTile(this.x, this.y, null);
 	var bombs = new Array();
@@ -36,6 +32,10 @@ define(['explosionfragment'], function (ExplosionFragment) {
 	    board.setTile(x, y, new ExplosionFragment(board, x, y));
 	}
     }
+
+    Bomb.prototype.isExploded = function () {
+	return this.hasExploded;
+    };
 
     Bomb.prototype.getPosition = function () {
 	return {x: this.x, y: this.y};
