@@ -1,7 +1,7 @@
 var requirejs = require("requirejs");
 
 requirejs.config({
-	nodeRequire: require
+    nodeRequire: require
 });
 
 requirejs(['express', 'socket.io', 'player', 'engine', 'wall', 'gametypes', 'board', 'bomb'], 

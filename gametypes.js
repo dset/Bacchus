@@ -1,4 +1,4 @@
 define({
-	WALL: 0,
-	BOMB: 1
+    WALL: 0,
+    BOMB: 1
 });

@@ -1,13 +1,13 @@
 define([], function () {
 
-	function Wall() {
-		
-	}
+    function Wall() {
+	
+    }
 
-	Wall.prototype.render = function (context2d, position, tileSize) {
-		context2d.fillStyle = "black";
-		context2d.fillRect(position.x * tileSize, position.y * tileSize, tileSize, tileSize);
-	};
+    Wall.prototype.render = function (context2d, position, tileSize) {
+	context2d.fillStyle = "black";
+	context2d.fillRect(position.x * tileSize, position.y * tileSize, tileSize, tileSize);
+    };
 
-	return Wall;
+    return Wall;
 });

@@ -1,33 +1,33 @@
 define([], function () {
-	var players = {};
+    var players = {};
 
-	function start(tickTime, render) {
-		setInterval(function () {
-			tick(render);
-		}, tickTime);
-	};
-		
-	function tick(render) {
-		var playerKeys = Object.keys(players);
-		playerKeys.forEach(function (key) {
-			players[key].update();
-		});
+    function start(tickTime, render) {
+	setInterval(function () {
+	    tick(render);
+	}, tickTime);
+    };
+    
+    function tick(render) {
+	var playerKeys = Object.keys(players);
+	playerKeys.forEach(function (key) {
+	    players[key].update();
+	});
 
-		render();
-	}
+	render();
+    }
 
-	function addPlayer(id, player) {
-		players[id] = player;
-	}
+    function addPlayer(id, player) {
+	players[id] = player;
+    }
 
-	function getPlayer(id) {
-		return players[id];
-	}
+    function getPlayer(id) {
+	return players[id];
+    }
 
-	function getPlayers() {
-		return players;
-	}
+    function getPlayers() {
+	return players;
+    }
 
 
-	return {start: start, addPlayer: addPlayer, getPlayers: getPlayers, getPlayer: getPlayer};
+    return {start: start, addPlayer: addPlayer, getPlayers: getPlayers, getPlayer: getPlayer};
 });
