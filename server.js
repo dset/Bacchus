@@ -8,8 +8,7 @@ requirejs(['express', 'socket.io', 'player', 'engine', 'wall', 'gametypes', 'boa
 function (express, socketio, Player, Engine, Wall, gametypes, Board, Bomb) {
     var TICK_TIME = 30;
     var BOARD_SIZE = 10;
-    var engine = new Engine(TICK_TIME, function () {}, function () {});
-    var board = new Board(BOARD_SIZE, BOARD_SIZE);
+    var engine = new Engine(TICK_TIME, new Board(BOARD_SIZE, BOARD_SIZE), function () {}, function () {});
     
     var server = express.createServer();
     server.use(express.static(__dirname));
@@ -17,7 +16,7 @@ function (express, socketio, Player, Engine, Wall, gametypes, Board, Bomb) {
     var io = socketio.listen(server);
 
     io.sockets.on("connection", function (socket) {
-	var serializedBoard = board.getSerializedVersion();
+	var serializedBoard = engine.getSerializedBoard();
 	socket.emit("gameinfo", {tickTime: TICK_TIME, board: serializedBoard});
 
 	var players = engine.getPlayers();
@@ -38,74 +37,60 @@ function (express, socketio, Player, Engine, Wall, gametypes, Board, Bomb) {
 	}
 
 	function createPlayer(x, y) {
-	    var newplayer = new Player(x, y, board);
+	    var newplayer = engine.createPlayer(socket.id, x, y);
 	    newplayer.addObserver("dead", killPlayer);
-	    engine.addPlayer(socket.id, newplayer);
 	    io.sockets.emit("newplayer", {id: socket.id, x: x, y: y});
 	}
 
 	socket.on("moveleft", function () {
-	    doMovePlayer(-1, 0);
+	    if(engine.movePlayerLeft(socket.id) === false) {
+		revertMove();
+	    }		
 	});
 
 	socket.on("moveright", function () {
-	    doMovePlayer(1, 0);
+	    if(engine.movePlayerRight(socket.id) === false) {
+		revertMove();
+	    }
 	});
 
 	socket.on("moveup", function () {
-	    doMovePlayer(0, -1);
+	    if(engine.movePlayerUp(socket.id) === false) {
+		revertMove();
+	    }
 	});
 
 	socket.on("movedown", function () {
-	    doMovePlayer(0, 1);
+	    if(engine.movePlayerDown(socket.id) === false) {
+		revertMove();
+	    }
 	});
 
-	function doMovePlayer(dx, dy) {
-	    var player = engine.getPlayer(socket.id);
-	    if(!player) {
-		return;
-	    }
-	    
-	    var pos = player.getPosition();
-	    if(player.isMoving() || !board.isTileWalkable(pos.x + dx, pos.y + dy)) {
-		return;
-	    }
-	    
-	    var targetPosition = {x: pos.x+dx, y: pos.y+dy};
-	    var ticks = 400 / TICK_TIME;
-	    var speed = {x: dx / ticks, y: dy / ticks};
-	    io.sockets.emit("moveplayer", {id: socket.id, targetPosition: targetPosition,
-				       speed: speed, ticks: ticks});
-	    engine.getPlayer(socket.id).moveToPosition(targetPosition, speed, ticks);
+	function revertMove() {
+	    var data = engine.getPlayer(socket.id).getPosition();
+	    data.id = socket.id;
+	    io.sockets.emit("moveplayerto", data);
 	}
 
 	socket.on("placebomb", function () {
 	    var player = engine.getPlayer(socket.id);
-	    if(!player) {
+	    if( ! player) {
+		/// If the player is dead, getPlayer will return undefined,
+		/// thats why this has to be here.
 		return;
 	    }
-	    
-	    var pos = player.getPosition();
-	    pos.x = Math.round(pos.x);
-	    pos.y = Math.round(pos.y);
-	    var bomb = board.setBombAt(pos.x, pos.y);
-	    if(bomb) {
-		bomb.timeoutId = setTimeout(function () {
-		    explodeBomb(bomb);
-		}, 3000);
 
-		io.sockets.emit("placebomb", bomb.getPosition());
+	    var bomb = player.placeBomb();
+	    if(bomb) {
+		bomb.addObserver("explosion", function () {
+		    onBombExplosion(bomb);
+		});
+		io.sockets.emit("placebomb", {id: socket.id});
+		bomb.startTicking();
 	    }
 	});
 
-	function explodeBomb(bomb) {
-	    var touchedBombs = bomb.explode() || new Array();
-	    touchedBombs.forEach(function (bomb) {
-		clearTimeout(bomb.timeoutId);
-		if(!bomb.isExploded()) {
-		    explodeBomb(bomb);
-		}
-	    });
+	function onBombExplosion(bomb) {
 	    io.sockets.emit("bombexplosion", bomb.getPosition());
 	}
 

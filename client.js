@@ -9,25 +9,33 @@ require(['player', 'engine', 'gametypes', 'wall', 'board', 'bomb', 'inputhandler
     var tickTime;
 
     socket.on("gameinfo", function (gameInfo) {
-	board = new Board(1, 1);
+	board = new Board(1,1);
 	board.buildFromSerializedVersion(gameInfo.board);
-	engine = new Engine(gameInfo.tickTime, draw, inputHandler.update.bind(inputHandler));
+	engine = new Engine(gameInfo.tickTime, board, draw, inputHandler.update.bind(inputHandler));
 	engine.start();
 
 	inputHandler.addKeyBinding(65, function () {
-	    socket.emit("moveleft");
+	    if(engine.movePlayerLeft(socket.socket.sessionid)) {
+		socket.emit("moveleft");
+	    }
 	});
 
 	inputHandler.addKeyBinding(68, function () {
-	    socket.emit("moveright");
+	    if(engine.movePlayerRight(socket.socket.sessionid)) {
+		socket.emit("moveright");
+	    }
 	});
 
 	inputHandler.addKeyBinding(83, function () {
-	    socket.emit("movedown");
+	    if(engine.movePlayerDown(socket.socket.sessionid)) {
+		socket.emit("movedown");
+	    }
 	});
 
 	inputHandler.addKeyBinding(87, function () {
-	    socket.emit("moveup");
+	    if(engine.movePlayerUp(socket.socket.sessionid)) {
+		socket.emit("moveup");
+	    }
 	});
 
 	inputHandler.addKeyBinding(32, function () {
@@ -35,23 +43,21 @@ require(['player', 'engine', 'gametypes', 'wall', 'board', 'bomb', 'inputhandler
 	});
     });
 
-    socket.on("newplayer", function (playerData) {
-	engine.addPlayer(playerData.id, new Player(playerData.x, playerData.y, board));
+    socket.on("newplayer", function (data) {
+	engine.createPlayer(data.id, data.x, data.y);
     });
 
     socket.on("removeplayer", function (data) {
 	engine.removePlayer(data.id);
     });
 
-    socket.on("moveplayer", function (moveData) {
-	var players = engine.getPlayers();
-	players[moveData.id].moveToPosition(moveData.targetPosition, moveData.speed,
-					    moveData.ticks);
+    socket.on("moveplayerto", function (data) {
+	engine.getPlayer(data.id).jumpTo(data.x, data.y);
     });
 
     socket.on("placebomb", function (data) {
-	var bomb = new Bomb(board, data.x, data.y);
-	board.setTile(data.x, data.y, bomb);
+	var player = engine.getPlayer(data.id);
+	player.placeBomb();
     });
 
     socket.on("bombexplosion", function (data) {

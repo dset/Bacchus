@@ -54,13 +54,11 @@ define(['wall', 'gametypes', 'bomb', 'explosionfragment'], function (Wall, gamet
 	this.board[x][y] = tileObject;
     };
 
-    Board.prototype.setBombAt = function (x, y) {
-	if(!(this.board[x][y] instanceof Wall || this.board[x][y] instanceof Bomb)) {
-	    var bomb = new Bomb(this, x, y);
-	    this.setTile(x, y, bomb);
-	    return bomb;
-	}
+    Board.prototype.canPlaceBombAt = function (x, y) {
+	return !(this.board[x][y] instanceof Wall || this.board[x][y] instanceof Bomb);
     };
+
+
 
     Board.prototype.setExplosionFragmentAt = function (x, y) {
 	if(!(this.board[x][y] instanceof Wall)) {

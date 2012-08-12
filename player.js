@@ -1,4 +1,4 @@
-define(['explosionfragment', 'observable'], function (ExplosionFragment, Observable) {
+define(['explosionfragment', 'observable', 'bomb'], function (ExplosionFragment, Observable, Bomb) {
     function Player(x, y, board) {
 	this.moveTicksLeft = 0;
 	this.targetPosition;
@@ -15,6 +15,22 @@ define(['explosionfragment', 'observable'], function (ExplosionFragment, Observa
 	this.targetPosition = targetPosition;
 	this.speed = speed;
     };
+
+    Player.prototype.jumpTo = function (x, y) {
+	this.position.x = x;
+	this.position.y = y;
+    };
+
+    Player.prototype.placeBomb = function () {
+	var x = Math.round(this.position.x);
+	var y = Math.round(this.position.y);
+	if(this.board.canPlaceBombAt(x, y)) {
+	    var bomb = new Bomb(this.board, x, y, 3000);
+	    this.board.setTile(x, y, bomb);
+	    return bomb;
+	}
+    };
+
 
     Player.prototype.update = function () {
 	if(this.moveTicksLeft > 0) {
