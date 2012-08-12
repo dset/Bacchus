@@ -1,18 +1,19 @@
 define([], function () {
     var players = {};
 
-    function start(tickTime, render) {
+    function start(tickTime, render, handleKeyPresses) {
 	setInterval(function () {
-	    tick(render);
+	    tick(render, handleKeyPresses);
 	}, tickTime);
     };
     
-    function tick(render) {
+    function tick(render, handleKeyPresses) {
 	var playerKeys = Object.keys(players);
 	playerKeys.forEach(function (key) {
 	    players[key].update();
 	});
 
+	handleKeyPresses();
 	render();
     }
 

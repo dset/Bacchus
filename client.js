@@ -1,13 +1,36 @@
-require(['player', 'engine', 'gametypes', 'wall', 'board', 'bomb'], function (Player, engine, gametypes, Wall, Board, Bomb) {
+require(['player', 'engine', 'gametypes', 'wall', 'board', 'bomb', 'inputhandler'], function (Player, engine, gametypes, Wall, Board, Bomb, InputHandler) {
+
     var socket = io.connect("http://localhost:8080");
     var canvas = document.getElementById("canvas");
     var context2d = canvas.getContext("2d");
+    var inputHandler = new InputHandler();
     var board;
     var tickTime;
+
     socket.on("gameinfo", function (gameInfo) {
 	board = new Board(1, 1);
 	board.buildFromSerializedVersion(gameInfo.board);
-	engine.start(gameInfo.tickTime, draw);
+	engine.start(gameInfo.tickTime, draw, inputHandler.update.bind(inputHandler));
+
+	inputHandler.addKeyBinding(65, function () {
+	    socket.emit("moveleft");
+	});
+
+	inputHandler.addKeyBinding(68, function () {
+	    socket.emit("moveright");
+	});
+
+	inputHandler.addKeyBinding(83, function () {
+	    socket.emit("movedown");
+	});
+
+	inputHandler.addKeyBinding(87, function () {
+	    socket.emit("moveup");
+	});
+
+	inputHandler.addKeyBinding(32, function () {
+	    socket.emit("placebomb");
+	});
     });
 
     socket.on("newplayer", function (playerData) {
@@ -49,22 +72,10 @@ require(['player', 'engine', 'gametypes', 'wall', 'board', 'bomb'], function (Pl
     }
 
     document.addEventListener("keydown", function (e) {
-	switch(e.keyCode) {
-	case 65:
-	    socket.emit("moveleft");
-	    break;
-	case 68:
-	    socket.emit("moveright");
-	    break;
-	case 83:
-	    socket.emit("movedown");
-	    break;
-	case 87:
-	    socket.emit("moveup");
-	    break;
-	case 32:
-	    socket.emit("placebomb");
-	    break;
-	}
+	inputHandler.pressKey(e.keyCode);
+    });
+
+    document.addEventListener("keyup", function (e) {
+	inputHandler.releaseKey(e.keyCode);
     });
 });

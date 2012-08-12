@@ -116,5 +116,5 @@ function (express, socketio, Player, engine, Wall, gametypes, Board, Bomb) {
 
     server.listen(8080);
 
-    engine.start(TICK_TIME, function () {});
+    engine.start(TICK_TIME, function () {}, function () {});
 });
