@@ -1,43 +1,44 @@
 define([], function () {
-    var players = {};
 
-    function start(tickTime, render, handleKeyPresses) {
+    function Engine(tickTime, render, handleKeyPresses) {
+	this.tickTime = tickTime;
+	this.render = render;
+	this.handleKeyPresses = handleKeyPresses;
+	this.players = {};
+    }
+    
+    Engine.prototype.start = function () {
+	var self = this;
 	setInterval(function () {
-	    tick(render, handleKeyPresses);
-	}, tickTime);
+	    self.tick();
+	}, this.tickTime);
     };
     
-    function tick(render, handleKeyPresses) {
-	var playerKeys = Object.keys(players);
+    Engine.prototype.tick = function () {
+	var playerKeys = Object.keys(this.players);
 	playerKeys.forEach(function (key) {
-	    players[key].update();
-	});
+	    this.players[key].update();
+	}, this);
 
-	handleKeyPresses();
-	render();
+	this.handleKeyPresses();
+	this.render();
     }
 
-    function addPlayer(id, player) {
-	players[id] = player;
+    Engine.prototype.addPlayer = function (id, player) {
+	this.players[id] = player;
     }
 
-    function removePlayer(id) {
-	delete players[id];
+    Engine.prototype.removePlayer = function (id) {
+	delete this.players[id];
     }
 
-    function getPlayer(id) {
-	return players[id];
+    Engine.prototype.getPlayer = function (id) {
+	return this.players[id];
     }
 
-    function getPlayers() {
-	return players;
+    Engine.prototype.getPlayers = function () {
+	return this.players;
     }
 
-
-    return {start: start,
-	    addPlayer: addPlayer,
-	    getPlayers: getPlayers,
-	    getPlayer: getPlayer,
-	    removePlayer: removePlayer
-	   };
+    return Engine;
 });

@@ -5,9 +5,10 @@ requirejs.config({
 });
 
 requirejs(['express', 'socket.io', 'player', 'engine', 'wall', 'gametypes', 'board', 'bomb'], 
-function (express, socketio, Player, engine, Wall, gametypes, Board, Bomb) {
+function (express, socketio, Player, Engine, Wall, gametypes, Board, Bomb) {
     var TICK_TIME = 30;
     var BOARD_SIZE = 10;
+    var engine = new Engine(TICK_TIME, function () {}, function () {});
     var board = new Board(BOARD_SIZE, BOARD_SIZE);
     
     var server = express.createServer();
@@ -116,5 +117,5 @@ function (express, socketio, Player, engine, Wall, gametypes, Board, Bomb) {
 
     server.listen(8080);
 
-    engine.start(TICK_TIME, function () {}, function () {});
+    engine.start();
 });

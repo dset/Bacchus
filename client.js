@@ -1,16 +1,18 @@
-require(['player', 'engine', 'gametypes', 'wall', 'board', 'bomb', 'inputhandler'], function (Player, engine, gametypes, Wall, Board, Bomb, InputHandler) {
+require(['player', 'engine', 'gametypes', 'wall', 'board', 'bomb', 'inputhandler'], function (Player, Engine, gametypes, Wall, Board, Bomb, InputHandler) {
 
     var socket = io.connect("http://localhost:8080");
     var canvas = document.getElementById("canvas");
     var context2d = canvas.getContext("2d");
     var inputHandler = new InputHandler();
+    var engine;
     var board;
     var tickTime;
 
     socket.on("gameinfo", function (gameInfo) {
 	board = new Board(1, 1);
 	board.buildFromSerializedVersion(gameInfo.board);
-	engine.start(gameInfo.tickTime, draw, inputHandler.update.bind(inputHandler));
+	engine = new Engine(gameInfo.tickTime, draw, inputHandler.update.bind(inputHandler));
+	engine.start();
 
 	inputHandler.addKeyBinding(65, function () {
 	    socket.emit("moveleft");
