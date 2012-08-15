@@ -51,6 +51,22 @@ require(['player', 'engine', 'gametypes', 'wall', 'board', 'bomb', 'inputhandler
 	engine.removePlayer(data.id);
     });
 
+    socket.on("moveplayerleft", function (data) {
+	engine.movePlayerLeft(data.id);
+    });
+
+    socket.on("moveplayerright", function (data) {
+	engine.movePlayerRight(data.id);
+    });
+
+    socket.on("moveplayerup", function (data) {
+	engine.movePlayerUp(data.id);
+    });
+    
+    socket.on("moveplayerdown", function (data) {
+	engine.movePlayerDown(data.id);
+    });
+
     socket.on("moveplayerto", function (data) {
 	engine.getPlayer(data.id).jumpTo(data.x, data.y);
     });

@@ -43,25 +43,37 @@ function (express, socketio, Player, Engine, Wall, gametypes, Board, Bomb) {
 	}
 
 	socket.on("moveleft", function () {
-	    if(engine.movePlayerLeft(socket.id) === false) {
+	    var successfulMove = engine.movePlayerLeft(socket.id);
+	    if(successfulMove === true) {
+		socket.broadcast.emit("moveplayerleft", {id: socket.id});
+	    } else if (successfulMove === false) {
 		revertMove();
-	    }		
+	    }
 	});
 
 	socket.on("moveright", function () {
-	    if(engine.movePlayerRight(socket.id) === false) {
+	    var successfulMove = engine.movePlayerRight(socket.id);
+	    if(successfulMove === true) {
+		socket.broadcast.emit("moveplayerright", {id: socket.id});
+	    } else if (successfulMove === false) {
 		revertMove();
 	    }
 	});
 
 	socket.on("moveup", function () {
-	    if(engine.movePlayerUp(socket.id) === false) {
+	    var successfulMove = engine.movePlayerUp(socket.id);
+	    if(successfulMove === true) {
+		socket.broadcast.emit("moveplayerup", {id: socket.id});
+	    } else if (successfulMove === false) {
 		revertMove();
 	    }
 	});
 
 	socket.on("movedown", function () {
-	    if(engine.movePlayerDown(socket.id) === false) {
+	    var successfulMove = engine.movePlayerDown(socket.id);
+	    if(successfulMove === true) {
+		socket.broadcast.emit("moveplayerdown", {id: socket.id});
+	    } else if (successfulMove === false) {
 		revertMove();
 	    }
 	});
