@@ -4,16 +4,17 @@ requirejs.config({
     nodeRequire: require
 });
 
-requirejs(['express', 'socket.io', 'player', 'engine', 'wall', 'gametypes', 'board', 'bomb'], 
+requirejs(['express', 'socket.io', 'player', 'engine', 'wall', 'gametypes', 'board', 'bomb'],
 function (express, socketio, Player, Engine, Wall, gametypes, Board, Bomb) {
     var TICK_TIME = 30;
     var BOARD_SIZE = 10;
     var engine = new Engine(TICK_TIME, new Board(BOARD_SIZE, BOARD_SIZE), function () {}, function () {});
-    
+
     var server = express.createServer();
     server.use(express.static(__dirname));
 
     var io = socketio.listen(server);
+    io.set('log level', 1);
 
     io.sockets.on("connection", function (socket) {
 	var serializedBoard = engine.getSerializedBoard();
@@ -39,15 +40,20 @@ function (express, socketio, Player, Engine, Wall, gametypes, Board, Bomb) {
 	function createPlayer(x, y) {
 	    var newplayer = engine.createPlayer(socket.id, x, y);
 	    newplayer.addObserver("dead", killPlayer);
+	    newplayer.addObserver("invalidcommand", revertCommand);
 	    io.sockets.emit("newplayer", {id: socket.id, x: x, y: y});
+	}
+
+	function revertCommand(identifier) {
+	    if(identifier === gametypes.MOVE_COMMAND) {
+		revertMove();
+	    }
 	}
 
 	socket.on("moveleft", function () {
 	    var successfulMove = engine.movePlayerLeft(socket.id);
 	    if(successfulMove === true) {
 		socket.broadcast.emit("moveplayerleft", {id: socket.id});
-	    } else if (successfulMove === false) {
-		revertMove();
 	    }
 	});
 
@@ -55,8 +61,6 @@ function (express, socketio, Player, Engine, Wall, gametypes, Board, Bomb) {
 	    var successfulMove = engine.movePlayerRight(socket.id);
 	    if(successfulMove === true) {
 		socket.broadcast.emit("moveplayerright", {id: socket.id});
-	    } else if (successfulMove === false) {
-		revertMove();
 	    }
 	});
 
@@ -64,8 +68,6 @@ function (express, socketio, Player, Engine, Wall, gametypes, Board, Bomb) {
 	    var successfulMove = engine.movePlayerUp(socket.id);
 	    if(successfulMove === true) {
 		socket.broadcast.emit("moveplayerup", {id: socket.id});
-	    } else if (successfulMove === false) {
-		revertMove();
 	    }
 	});
 
@@ -73,8 +75,6 @@ function (express, socketio, Player, Engine, Wall, gametypes, Board, Bomb) {
 	    var successfulMove = engine.movePlayerDown(socket.id);
 	    if(successfulMove === true) {
 		socket.broadcast.emit("moveplayerdown", {id: socket.id});
-	    } else if (successfulMove === false) {
-		revertMove();
 	    }
 	});
 

@@ -15,28 +15,45 @@ require(['player', 'engine', 'gametypes', 'wall', 'board', 'bomb', 'inputhandler
 	engine.start();
 
 	inputHandler.addKeyBinding(65, function () {
-	    if(engine.movePlayerLeft(socket.socket.sessionid)) {
+	    var player = engine.getPlayer(socket.socket.sessionid);
+	    var pos = player.getPosition();
+	    if( ! isPlayerMoving() && board.isTileWalkable(pos.x - 1, pos.y)) {
+		engine.movePlayerLeft(socket.socket.sessionid);
 		socket.emit("moveleft");
 	    }
 	});
 
 	inputHandler.addKeyBinding(68, function () {
-	    if(engine.movePlayerRight(socket.socket.sessionid)) {
+	    var player = engine.getPlayer(socket.socket.sessionid);
+	    var pos = player.getPosition();
+	    if( ! isPlayerMoving() && board.isTileWalkable(pos.x + 1, pos.y)) {
+		engine.movePlayerRight(socket.socket.sessionid);
 		socket.emit("moveright");
 	    }
 	});
 
 	inputHandler.addKeyBinding(83, function () {
-	    if(engine.movePlayerDown(socket.socket.sessionid)) {
+	    var player = engine.getPlayer(socket.socket.sessionid);
+	    var pos = player.getPosition();
+	    if( ! isPlayerMoving() && board.isTileWalkable(pos.x, pos.y + 1)) {
+		engine.movePlayerDown(socket.socket.sessionid);
 		socket.emit("movedown");
 	    }
 	});
 
 	inputHandler.addKeyBinding(87, function () {
-	    if(engine.movePlayerUp(socket.socket.sessionid)) {
+	    var player = engine.getPlayer(socket.socket.sessionid);
+	    var pos = player.getPosition();
+	    if( ! isPlayerMoving() && board.isTileWalkable(pos.x, pos.y - 1)) {
+		engine.movePlayerUp(socket.socket.sessionid);
 		socket.emit("moveup");
 	    }
 	});
+
+	function isPlayerMoving() {
+	    var player = engine.getPlayer(socket.socket.sessionid);
+	    return player && player.isMoving();
+	}
 
 	inputHandler.addKeyBinding(32, function () {
 	    socket.emit("placebomb");

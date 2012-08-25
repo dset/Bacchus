@@ -1,4 +1,4 @@
-define(['player'], function (Player) {
+define(['player', 'movecommand'], function (Player, MoveCommand) {
 
     function Engine(tickTime, board, render, handleKeyPresses) {
 	this.tickTime = tickTime;
@@ -61,23 +61,16 @@ define(['player'], function (Player) {
 	return this._movePlayer(id, 0, 1);
     };
 
-    /// Returns true if player moved, false if player was blocked, and undefined
-    /// if the player did not exist.
     Engine.prototype._movePlayer = function (id, dx, dy) {
 	var player = this.getPlayer(id);
 	if( ! player) {
 	    return;
 	}
 
-	var pos = player.getPosition();
-	if(player.isMoving() || !this.board.isTileWalkable(pos.x + dx, pos.y + dy)) {
-	    return false;
-	}
-	
-	var targetPosition = {x: pos.x+dx, y: pos.y+dy};
 	var ticks = 400 / this.tickTime;
-	var speed = {x: dx / ticks, y: dy / ticks};
-	player.moveToPosition(targetPosition, speed, ticks);
+	var command = new MoveCommand(dx, dy, ticks, player,
+				      this.board.isTileWalkable.bind(this.board));
+	player.pushCommand(command);
 	return true;
     }
 
