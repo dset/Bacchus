@@ -90,7 +90,14 @@ require(['player', 'engine', 'gametypes', 'wall', 'board', 'bomb', 'inputhandler
 
     socket.on("placebomb", function (data) {
 	var player = engine.getPlayer(data.id);
-	player.placeBomb();
+	if(player.runningCommand && player.commandQueue.length > 0) {
+	    player.runningCommand.fastForward();
+	    player.runningCommand = undefined;
+	}
+	while(player.commandQueue.length > 1) {
+	    player.commandQueue.shift().fastForward();
+	}
+	player.placeBombAt(data.x, data.y);
     });
 
     socket.on("bombexplosion", function (data) {

@@ -35,5 +35,15 @@ define(['gametypes'], function (types) {
 	return false;
     };
 
+    MoveCommand.prototype.fastForward = function () {
+	if(this.targetX === undefined) {
+	    this.targetX = this.player.position.x + this.dx;
+	    this.targetY = this.player.position.y + this.dy;
+	}
+	this.player.position.x = this.targetX;
+	this.player.position.y = this.targetY;
+    };
+
+
     return MoveCommand;
 });

@@ -14,15 +14,20 @@ define(['explosionfragment', 'observable', 'bomb', 'movecommand'], function (Exp
 	this.position.y = y;
     };
 
-    Player.prototype.placeBomb = function () {
+    Player.prototype.placeBombAtCurrentPosition = function () {
 	var x = Math.round(this.position.x);
 	var y = Math.round(this.position.y);
+	return this.placeBombAt(x, y);
+    };
+
+    Player.prototype.placeBombAt = function (x, y) {
 	if(this.board.canPlaceBombAt(x, y)) {
 	    var bomb = new Bomb(this.board, x, y, 3000);
 	    this.board.setTile(x, y, bomb);
 	    return bomb;
 	}
     };
+
 
     Player.prototype.pushCommand = function (command) {
 	if( ! this.runningCommand && this.commandQueue.length === 0) {
@@ -32,7 +37,6 @@ define(['explosionfragment', 'observable', 'bomb', 'movecommand'], function (Exp
 	    this.commandQueue.push(command);
 	}
     };
-
 
     Player.prototype.update = function () {
 	this.runCommand();

@@ -92,12 +92,12 @@ function (express, socketio, Player, Engine, Wall, gametypes, Board, Bomb) {
 		return;
 	    }
 
-	    var bomb = player.placeBomb();
+	    var bomb = player.placeBombAtCurrentPosition();
 	    if(bomb) {
 		bomb.addObserver("explosion", function () {
 		    onBombExplosion(bomb);
 		});
-		io.sockets.emit("placebomb", {id: socket.id});
+		io.sockets.emit("placebomb", {id: socket.id, x: bomb.x, y: bomb.y});
 		bomb.startTicking();
 	    }
 	});
