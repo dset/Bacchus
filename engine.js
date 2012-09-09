@@ -1,43 +1,85 @@
-define([], function () {
-    var players = {};
+define(['player', 'movecommand'], function (Player, MoveCommand) {
 
-    function start(tickTime, render, handleKeyPresses) {
+    function Engine(tickTime, board, render, handleKeyPresses) {
+	this.tickTime = tickTime;
+	this.render = render;
+	this.handleKeyPresses = handleKeyPresses;
+	this.players = {};
+	this.board = board;
+    }
+    
+    Engine.prototype.start = function () {
+	var self = this;
 	setInterval(function () {
-	    tick(render, handleKeyPresses);
-	}, tickTime);
+	    self.tick();
+	}, this.tickTime);
     };
     
-    function tick(render, handleKeyPresses) {
-	var playerKeys = Object.keys(players);
+    Engine.prototype.tick = function () {
+	var playerKeys = Object.keys(this.players);
 	playerKeys.forEach(function (key) {
-	    players[key].update();
-	});
+	    this.players[key].update();
+	}, this);
 
-	handleKeyPresses();
-	render();
+	this.handleKeyPresses();
+	this.render();
+    };
+
+    Engine.prototype.addPlayer = function (id, player) {
+	this.players[id] = player;
+    };
+
+    Engine.prototype.removePlayer = function (id) {
+	delete this.players[id];
+    };
+
+    Engine.prototype.getPlayer = function (id) {
+	return this.players[id];
+    };
+
+    Engine.prototype.getPlayers = function () {
+	return this.players;
+    };
+
+    Engine.prototype.getSerializedBoard = function () {
+	return this.board.getSerializedVersion();
+    };
+
+    Engine.prototype.movePlayerLeft = function (id) {
+	return this._movePlayer(id, -1, 0);
+    };
+
+    Engine.prototype.movePlayerRight = function (id) {
+	return this._movePlayer(id, 1, 0);
+    };
+
+    Engine.prototype.movePlayerUp = function (id) {
+	return this._movePlayer(id, 0, -1);
+    };
+
+    Engine.prototype.movePlayerDown = function (id) {
+	return this._movePlayer(id, 0, 1);
+    };
+
+    Engine.prototype._movePlayer = function (id, dx, dy) {
+	var player = this.getPlayer(id);
+	if( ! player) {
+	    return;
+	}
+
+	var ticks = 400 / this.tickTime;
+	var command = new MoveCommand(dx, dy, ticks, player,
+				      this.board.isTileWalkable.bind(this.board));
+	player.pushCommand(command);
+	return true;
     }
 
-    function addPlayer(id, player) {
-	players[id] = player;
-    }
-
-    function removePlayer(id) {
-	delete players[id];
-    }
-
-    function getPlayer(id) {
-	return players[id];
-    }
-
-    function getPlayers() {
-	return players;
-    }
+    Engine.prototype.createPlayer = function (id, x, y) {
+	var player = new Player(x, y, this.board);
+	this.addPlayer(id, player);
+	return player;
+    };
 
 
-    return {start: start,
-	    addPlayer: addPlayer,
-	    getPlayers: getPlayers,
-	    getPlayer: getPlayer,
-	    removePlayer: removePlayer
-	   };
+    return Engine;
 });
