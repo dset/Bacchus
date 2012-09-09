@@ -7,7 +7,9 @@ define([], function () {
     }
 
     ExplosionFragment.prototype.remove = function () {
-	this.board.setTile(this.x, this.y, null);
+	if(this.board.getTileObjectAt(this.x, this.y) instanceof ExplosionFragment) {
+	    this.board.setTile(this.x, this.y, null);
+	}
     };
 
     ExplosionFragment.prototype.render = function (context2d, position, tileSize) {

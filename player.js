@@ -1,33 +1,71 @@
-define(['explosionfragment', 'observable'], function (ExplosionFragment, Observable) {
+define(['explosionfragment', 'observable', 'bomb', 'movecommand'], function (ExplosionFragment, Observable, Bomb, MoveCommand) {
     function Player(x, y, board) {
-	this.moveTicksLeft = 0;
-	this.targetPosition;
-	this.speed = {x: 0, y: 0};
 	this.position = {x: x, y: y};
 	this.board = board;
 	this.observers = {};
+	this.commandQueue = [];
+	this.runningCommand = undefined;
     };
 
     Player.prototype = new Observable();
 
-    Player.prototype.moveToPosition = function (targetPosition, speed, ticks) {
-	this.moveTicksLeft = ticks;
-	this.targetPosition = targetPosition;
-	this.speed = speed;
+    Player.prototype.jumpTo = function (x, y) {
+	this.position.x = x;
+	this.position.y = y;
+    };
+
+    Player.prototype.placeBombAtCurrentPosition = function () {
+	var x = Math.round(this.position.x);
+	var y = Math.round(this.position.y);
+	return this.placeBombAt(x, y);
+    };
+
+    Player.prototype.placeBombAt = function (x, y) {
+	if(this.board.canPlaceBombAt(x, y)) {
+	    var bomb = new Bomb(this.board, x, y, 3000);
+	    this.board.setTile(x, y, bomb);
+	    return bomb;
+	}
+    };
+
+
+    Player.prototype.pushCommand = function (command) {
+	if( ! this.runningCommand && this.commandQueue.length === 0) {
+	    this.runningCommand = command;
+	    this._initRunningCommand();
+	} else {
+	    this.commandQueue.push(command);
+	}
     };
 
     Player.prototype.update = function () {
-	if(this.moveTicksLeft > 0) {
-	    this.position.x += this.speed.x;
-	    this.position.y += this.speed.y;
-	    this.moveTicksLeft--;
-	    if(this.moveTicksLeft <= 0) {
-		this.position = this.targetPosition;
-		this.targetPosition = undefined;
-		this.speed = {x: 0, y: 0};
-	    }
+	this.runCommand();
+	this.deathDetection();
+    };
+
+    Player.prototype.runCommand = function () {
+	if(!this.runningCommand && this.commandQueue.length > 0) {
+	    this.runningCommand = this.commandQueue.shift();
+	    this._initRunningCommand();
 	}
 
+	if(this.runningCommand) {
+	    var finished = this.runningCommand.execute();
+	    if(finished) {
+		this.runningCommand = undefined;
+	    }
+	}
+    };
+
+    Player.prototype._initRunningCommand = function () {
+	if( ! this.runningCommand.init()) {
+	    this.notify("invalidcommand", this.runningCommand.identifier);
+	    this.runningCommand = undefined;
+	}
+    };
+
+
+    Player.prototype.deathDetection = function () {
 	var pos = this.position;
 	var tile1 = this.board.getTileObjectAt(Math.floor(pos.x), Math.floor(pos.y));
 	var tile2 = this.board.getTileObjectAt(Math.ceil(pos.x), Math.floor(pos.y));
@@ -40,16 +78,13 @@ define(['explosionfragment', 'observable'], function (ExplosionFragment, Observa
 	}
     };
 
+
     Player.prototype.getPosition = function () {
 	return this.position;
     };
 
-    Player.prototype.getSpeed = function () {
-	return this.speed;
-    };
-
     Player.prototype.isMoving = function () {
-	return this.speed.x !== 0 || this.speed.y !== 0;
+	return this.runningCommand instanceof MoveCommand;
     };
     
     return Player;
